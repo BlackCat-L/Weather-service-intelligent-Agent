@@ -72,7 +72,13 @@ const items = computed(() => props.trace)
           <span class="chev">{{ expanded.has(i) ? '收起' : '详情' }}</span>
         </div>
 
-        <div v-if="argsSummary(t.args)" class="args mono">↳ {{ argsSummary(t.args) }}</div>
+        <!-- 参数是「自主决策」最硬的证据：这些值不是代码写死的，
+             而是模型自己从用户问题里提取、自己算出来的
+             （比如从「余杭区明天…」里提取出 place=余杭区、换算出 date=2026-09-20） -->
+        <div v-if="argsSummary(t.args)" class="args">
+          <span class="args-label">模型传入</span>
+          <span class="mono">{{ argsSummary(t.args) }}</span>
+        </div>
 
         <pre v-if="expanded.has(i) && t.result" class="raw">{{
           pretty(t.result)
@@ -174,8 +180,20 @@ const items = computed(() => props.trace)
 .args {
   color: var(--c-text-2);
   word-break: break-all;
-  margin-top: 2px;
+  margin-top: 3px;
   line-height: 1.5;
+  display: flex;
+  gap: 6px;
+  align-items: baseline;
+}
+
+.args-label {
+  flex-shrink: 0;
+  font-size: 10.5px;
+  color: var(--c-accent);
+  background: var(--c-accent-soft);
+  padding: 1px 5px;
+  border-radius: 3px;
 }
 
 .raw {

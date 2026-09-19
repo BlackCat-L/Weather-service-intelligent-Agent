@@ -177,9 +177,15 @@ function onKeydown(e: KeyboardEvent) {
         <template v-if="panelTurn">
           <div class="block">
             <div class="block-title">
-              工具调用轨迹
+              模型自主决策的调用路径
               <span v-if="panelTurn.running" class="badge badge--warn"><i class="spinner" /> 进行中</span>
             </div>
+            <!-- 这行说明是这个面板存在的意义：让"自主决策"这件事被看见。
+                 观众看到工具一个个冒出来时，需要知道「没有人写这段流程」。 -->
+            <p class="block-hint">
+              调哪个工具、按什么顺序、传什么参数，全部由模型在运行时决定——
+              代码里没有 <code>if 用户问清洗 → 先查坐标再查规则</code> 这样的流程。
+            </p>
             <ToolTrace :trace="panelTurn.trace" :live="panelTurn.running" />
           </div>
 
@@ -491,6 +497,20 @@ textarea:focus {
   font-size: 12.5px;
   line-height: 1.75;
   padding-top: 20px;
+}
+
+.block-hint {
+  margin: 0 0 10px;
+  font-size: 11.5px;
+  line-height: 1.6;
+  color: var(--c-text-3);
+}
+
+.block-hint code {
+  background: var(--c-surface-2);
+  padding: 1px 4px;
+  border-radius: 3px;
+  font-size: 11px;
 }
 
 @media (max-width: 1080px) {
