@@ -58,10 +58,21 @@ def check_forbidden(case: dict, called: list[str]) -> list[str]:
 
 
 def check_keywords(case: dict, answer: str) -> tuple[bool, list[str]]:
+    """检查回答是否覆盖期望要点。
+
+    每个关键词可以是字符串（必须出现），也可以是**字符串列表（出现任一即可）**。
+    后者用于同义表述——比如问「哪个时段合适」，回答写「时间窗口 00:00~23:00」
+    同样正确。评测题若只认字面「时段」，会把正确答案判为失败，
+    这种假阴性比漏测更危险：它会让人去"修"一个本来没坏的东西。
+    """
     kws = case.get("expect_keywords") or []
-    if not kws:
-        return True, []
-    missed = [k for k in kws if k not in answer]
+    missed: list[str] = []
+    for k in kws:
+        if isinstance(k, list):
+            if not any(alt in answer for alt in k):
+                missed.append(" 或 ".join(k))
+        elif k not in answer:
+            missed.append(k)
     return (not missed), missed
 
 

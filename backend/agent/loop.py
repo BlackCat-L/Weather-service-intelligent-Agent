@@ -23,6 +23,9 @@ from ..infra import config, llm
 
 log = logging.getLogger(__name__)
 
+# 同一工具累计调用超过这个次数，就注入一条「你在绕圈」的提醒（见下方注释）
+_LOOP_HINT_AFTER = 3
+
 
 def _exec_one(registry, tc: dict):
     """执行单个工具调用，返回 (工具名, 参数, 结果)。"""
@@ -100,6 +103,27 @@ def run(question: str, registry, system_prompt: str,
                 "tool_call_id": tc.get("id"),
                 "content": json.dumps(result, ensure_ascii=False, default=str),
             })
+
+            # ---- 重复调用检测（防检索循环）----
+            #
+            # 实测踩过的坑：模型给「户外作业」问题选错了知识库分类，
+            # 被过滤条件卡住检索不到，于是不断换措辞重试——一次问答调了
+            # 7 次知识库、耗尽轮次上限才停。单次调用都「成功」了（返回了结果），
+            # 所以错误被静默吞掉，只在耗时上体现。
+            #
+            # 对策：同一工具累计调用超过阈值就注入一条提醒，让模型基于已有结果作答。
+            # 这是纯提示层面的干预——不阻断调用（万一真的需要多次查不同参数），
+            # 只把「你在绕圈」这个事实告诉模型。
+            count = sum(1 for t in trace if t["name"] == name)
+            if count == _LOOP_HINT_AFTER:
+                log.warning("工具 %s 已被调用 %s 次，可能是检索循环", name, count)
+                messages.append({
+                    "role": "system",
+                    "content": (f"注意：你已经调用 {name} {count} 次了。"
+                                "如果这些调用的目的相同，说明方向不对——"
+                                "请基于**已经拿到的结果**作答，不要再重复检索。"
+                                "如果确实还需要别的信息，请说明缺什么，或换个工具。"),
+                })
 
     log.warning("达到最大工具调用轮次 %s，强制结束", max_rounds)
     return {

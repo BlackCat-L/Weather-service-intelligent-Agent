@@ -19,25 +19,47 @@ log = logging.getLogger(__name__)
 
 
 def kb_search(query: str, categories: list[str] | None = None, top_k: int = 5) -> dict:
-    """在气象知识库中检索相关条文。"""
+    """在气象知识库中检索相关条文。
+
+    **重要的兜底设计：分类过滤是优化项，不是硬约束。**
+    实测踩过的坑：模型给「户外作业」问题选了 `行业规则-交通` 这个错误的分类，
+    被过滤条件卡住检索不到内容，于是不断换措辞重试，一次问答调了 7 次知识库
+    都没收敛。所以这里加了一道兜底——过滤后结果太少就自动去掉过滤重试一次，
+    让模型第一次调用就能拿到可用结果，而不是陷入检索循环。
+    """
     kb = get_kb()
     if not kb.ready:
         return {
             "error": "知识库索引尚未构建",
             "hint": "请先运行 python scripts/build_index.py，或直接用你的通用知识回答并说明无知识库支撑",
         }
+
     result = kb.search(query, top_k=top_k, categories=categories, neighbors=True)
+    fell_back = False
+
+    # 兜底：带分类过滤时结果过少，说明分类可能选错，去掉过滤重试
+    if categories and len(result["hits"]) < 2:
+        unfiltered = kb.search(query, top_k=top_k, categories=None, neighbors=True)
+        if len(unfiltered["hits"]) > len(result["hits"]):
+            result = unfiltered
+            fell_back = True
+
     if not result["hits"]:
         return {"query": query, "hits": [], "note": "知识库中没有找到相关内容"}
 
     # 精简返回：模型只需要正文与出处，不需要分数与内部 id
     hits = [{"category": h.get("category"), "text": h.get("text"),
              "source": h.get("source")} for h in result["hits"]]
-    return {
+    out = {
         "query": query,
         "method": result["method"],          # hybrid / bm25，便于排查检索质量问题
         "hits": hits,
     }
+    if fell_back:
+        out["note"] = ("指定的分类下结果过少，已自动改为全库检索。"
+                       "如果这些结果与问题无关，说明分类选错了——"
+                       "请直接使用本结果作答，不要再用其它分类重复检索。")
+    return out
 
 
 def register(reg):
@@ -62,8 +84,11 @@ def register(reg):
             "query": {"type": "string", "description": "检索问题，用自然语言描述即可，例如「光伏组件清洗对降水的要求」", "required": True},
             "categories": {
                 "type": "array",
-                "description": "可选的分类过滤，缩小检索范围。不传则全库检索",
-                "enum": ["术语", "灾害标准", "行业规则-能源", "行业规则-交通", "行业规则-农业", "数据说明"],
+                "description": ("可选的分类过滤。**不确定内容属于哪个分类时不要传**——"
+                                "传错分类会被过滤掉，反而检索不到；工具在分类结果过少时"
+                                "会自动改为全库检索，但直接不传更省一轮"),
+                "enum": ["术语", "灾害标准", "行业规则-能源", "行业规则-交通",
+                         "行业规则-农业", "行业规则-户外", "数据说明"],
             },
             "top_k": {"type": "integer", "description": "返回条数，默认 5"},
         },
