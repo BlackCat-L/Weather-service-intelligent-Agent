@@ -60,10 +60,71 @@ logging.basicConfig(
 )
 log = logging.getLogger("weather-agent")
 
+# 接口分组：Swagger UI 会按这个顺序分区展示，并显示每组的中文说明
+TAGS_METADATA = [
+    {
+        "name": "对话",
+        "description": (
+            "Agent 问答接口——**这是产品的核心能力**。\n\n"
+            "用户用自然语言提问，Agent 自主决定调用哪些工具（解析地名坐标、拉取气象数据、"
+            "计算发电出力、检索行业规则），最终给出可直接执行的决策结论。\n\n"
+            "两种调用方式功能相同，按场景选：**流式**（能看到执行过程，适合前端）、"
+            "**一次性 JSON**（适合脚本与批量评估）。"
+        ),
+    },
+    {
+        "name": "知识库",
+        "description": (
+            "检索层的调试接口。把混合检索的内部过程暴露出来——"
+            "BM25 单路排了什么、向量单路排了什么、RRF 融合后是什么。\n\n"
+            "检索质量是 RAG 系统成败的关键，却也是最不透明的一环。"
+            "这组接口就是把它变得可见：调参数不用改代码不用重启，"
+            "也便于直观对比「混合检索为什么优于单路」。"
+        ),
+    },
+    {
+        "name": "系统",
+        "description": "健康检查与能力清单。排查配置问题时先看这两个接口。",
+    },
+]
+
 app = FastAPI(
-    title="气象服务智能体",
-    description="面向能源/交通/农业的气象服务 Agent，支持 Function Calling 与混合检索 RAG",
+    title="气象服务智能体 · API",
+    description="""
+面向 **能源 / 交通 / 农业** 的气象服务 Agent 接口。
+
+用自然语言提问，Agent 自主决定调用哪些工具——解析地名坐标、拉取气象数据、
+计算发电出力、检索行业规则——最终给出**可直接执行的决策结论**，
+而不是一堆原始气象数字。
+
+> 目标是回答「**明天下午能不能安排光伏板清洗**」，而不是「明天天气怎么样」。
+
+---
+
+### 这个 API 有什么不一样
+
+| 特性 | 说明 |
+|---|---|
+| **Function Calling 工具编排** | 8 个工具，模型自主决定调用路径，无硬编码流程；支持并行调用与失败容错 |
+| **混合检索知识库** | BM25 + 向量双路 + RRF 融合，向量索引缺失时自动降级为单路 |
+| **数值归因校验** | 回答中每个数字与日期都必须能追溯到工具返回结果，防大模型编造气象数值 |
+| **完整可观测性** | 每次问答返回结构化 trace（工具调用序列、参数、返回值）与归因报告 |
+
+### 快速上手
+
+1. 调 `POST /api/chat` 问一个问题，看返回的 `trace` 与 `verification`
+2. 调 `POST /api/kb/search` 传 `{"query": "多少度算高温"}`，对比三路检索结果
+3. 调 `GET /api/tools` 查看 Agent 当前具备哪些工具能力
+
+### 关于默认值
+
+请求体里的示例值可以直接点「Try it out」发送，不需要改任何字段。
+`mode` 默认 `single`（单 Agent，快），`stream` 默认 `true`。
+""",
     version="1.0.0",
+    openapi_tags=TAGS_METADATA,
+    contact={"name": "杨林灵", "url": "https://github.com/BlackCat-L/Weather-service-intelligent-Agent"},
+    license_info={"name": "项目源码", "url": "https://github.com/BlackCat-L/Weather-service-intelligent-Agent"},
 )
 
 # 开发时前端跑在 Vite 的 5173 端口，需要跨域
@@ -81,10 +142,12 @@ app.include_router(kb.router)
 _START = time.time()
 
 
-@app.get("/api/health")
+@app.get("/api/health", tags=["系统"], summary="健康检查")
 def health():
-    """健康检查。也是排查配置问题最快的入口——一眼看出用的哪个模型、
-    知识库有没有加载、工具注册了几个。"""
+    """排查配置问题最快的入口——一眼看出用的哪个模型、知识库有没有加载、工具注册了几个。
+
+    重点看 `knowledge_base.vector_index`：为 `false` 说明向量索引不可用、
+    已降级为纯 BM25，检索质量会明显下降。"""
     p = config.provider()
     try:
         kb_stats = get_kb().stats
@@ -102,9 +165,12 @@ def health():
     }
 
 
-@app.get("/api/tools")
+@app.get("/api/tools", tags=["系统"], summary="工具能力清单")
 def tools():
-    """已注册工具清单。前端用它展示 Agent 的能力边界。"""
+    """列出 Agent 当前具备的全部工具及其参数。
+
+    这份清单就是 Agent 的能力边界——模型只能从这些工具里选。
+    新增工具只需在 `backend/tools/` 下写模块并登记一行，无需改动其它代码。"""
     reg = qa_service.registry()
     return {
         "count": len(reg),
