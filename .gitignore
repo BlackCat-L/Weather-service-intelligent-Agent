@@ -1,0 +1,35 @@
+# ---- 密钥：绝对不要提交 ----
+.env
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+*.egg-info/
+
+# ---- 知识库索引产物 ----
+# 由 scripts/build_index.py 生成，体积大且可重建。
+# 如果要部署到服务器，用 rsync/scp 单独传，或不忽略这几行改为提交。
+backend/kb/data/chunks.json
+backend/kb/data/bm25.pkl
+backend/kb/data/vectors.npy
+
+# ---- 前端 ----
+node_modules/
+frontend/dist/
+.pnpm-store/
+
+# ---- 评估产物 ----
+backend/evals/last_report.json
+
+# ---- 编辑器与系统 ----
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log
+
+# ---- 本地调试脚本 ----
+_shot*
+_edgeprofile/

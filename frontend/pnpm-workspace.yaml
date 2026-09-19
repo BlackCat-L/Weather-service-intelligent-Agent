@@ -1,0 +1,8 @@
+# pnpm 默认拦截依赖的 postinstall 脚本 —— 这是重要的供应链安全防护，
+# 因为恶意包常靠 postinstall 执行任意代码。但有两个包必须跑：
+#   · esbuild  —— 不跑就装不上平台二进制，vite 起不来
+#   · vue-demi —— 不跑就无法正确适配 Vue 版本（pinia 依赖它）
+# 所以按需逐项放行，而不是用 --dangerously-allow-all-builds 整体放开。
+allowBuilds:
+  esbuild: true
+  vue-demi: true

@@ -1,0 +1,20 @@
+# ---- Web 服务 ----
+fastapi>=0.115
+uvicorn[standard]>=0.30
+python-multipart>=0.0.9
+pydantic>=2.7
+
+# ---- 大模型调用 ----
+# 全部走 OpenAI 兼容协议，因此不需要任何供应商专用 SDK，
+# 换供应商只改 .env —— 这也是少一个依赖、少一处版本冲突
+requests>=2.31
+python-dotenv>=1.0
+
+# ---- 检索层 ----
+jieba>=0.42                  # 中文分词（BM25 前置）
+rank-bm25>=0.2               # 稀疏检索
+numpy>=1.26                  # 向量运算
+fastembed>=0.4               # 本地 ONNX 嵌入（bge-small-zh），零 API 依赖、永不限流
+
+# ---- 数据处理与可视化（工具层与脚本用）----
+pandas>=2.2

@@ -1,0 +1,36 @@
+{
+  "doubao-seed-character-260628": {
+    "_available": true,
+    "连通与延迟": {
+      "pass": true,
+      "latency_avg": 0.87,
+      "latency_max": 0.89,
+      "detail": "平均 0.87s（0.86~0.89）"
+    },
+    "单工具调用": {
+      "pass": "杭州",
+      "detail": "geocode_place({\"place\": \"杭州\"})",
+      "latency": 1.14
+    },
+    "并行工具调用": {
+      "pass": true,
+      "detail": "返回 2 个调用：geocode_place, search_weather_knowledge",
+      "latency": 1.28
+    },
+    "工具选择克制": {
+      "pass": true,
+      "detail": "调用：search_weather_knowledge",
+      "latency": 1.22
+    },
+    "指令遵循": {
+      "pass": true,
+      "detail": "加粗:✓ 来源标注:✓ 编造数值:无",
+      "latency": 1.06
+    },
+    "多轮工具链": {
+      "pass": true,
+      "detail": "第一轮 ['geocode_place'] → 第二轮 ['assess_weather_risk']",
+      "latency": 3.11
+    }
+  }
+}

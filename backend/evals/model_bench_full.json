@@ -1,0 +1,172 @@
+{
+  "doubao-seed-2-0-lite-260428": {
+    "_available": true,
+    "连通与延迟": {
+      "pass": true,
+      "latency_avg": 17.76,
+      "latency_max": 20.96,
+      "detail": "平均 17.76s（15.58~20.96）"
+    },
+    "单工具调用": {
+      "pass": "杭州",
+      "detail": "geocode_place({\"place\": \"杭州\"})",
+      "latency": 14.17
+    },
+    "并行工具调用": {
+      "pass": true,
+      "detail": "返回 2 个调用：geocode_place, search_weather_knowledge",
+      "latency": 20.18
+    },
+    "工具选择克制": {
+      "pass": true,
+      "detail": "调用：search_weather_knowledge",
+      "latency": 5.27
+    },
+    "指令遵循": {
+      "pass": true,
+      "detail": "加粗:✓ 来源标注:✓ 编造数值:无",
+      "latency": 23.63
+    },
+    "多轮工具链": {
+      "pass": true,
+      "detail": "第一轮 ['geocode_place'] → 第二轮 ['assess_weather_risk']",
+      "latency": 15.67
+    }
+  },
+  "doubao-seed-2-0-mini-260428": {
+    "_available": true,
+    "连通与延迟": {
+      "pass": true,
+      "latency_avg": 3.22,
+      "latency_max": 4.49,
+      "detail": "平均 3.22s（2.42~4.49）"
+    },
+    "单工具调用": {
+      "pass": "杭州",
+      "detail": "geocode_place({\"place\": \"杭州\"})",
+      "latency": 2.46
+    },
+    "并行工具调用": {
+      "pass": true,
+      "detail": "返回 2 个调用：geocode_place, search_weather_knowledge",
+      "latency": 17.51
+    },
+    "工具选择克制": {
+      "pass": true,
+      "detail": "调用：search_weather_knowledge",
+      "latency": 4.24
+    },
+    "指令遵循": {
+      "pass": true,
+      "detail": "加粗:✓ 来源标注:✓ 编造数值:无",
+      "latency": 2.98
+    },
+    "多轮工具链": {
+      "pass": true,
+      "detail": "第一轮 ['geocode_place'] → 第二轮 ['assess_weather_risk']",
+      "latency": 5.38
+    }
+  },
+  "doubao-seed-2-0-lite-260215": {
+    "_available": true,
+    "连通与延迟": {
+      "pass": true,
+      "latency_avg": 7.87,
+      "latency_max": 8.21,
+      "detail": "平均 7.87s（7.63~8.21）"
+    },
+    "单工具调用": {
+      "pass": "杭州",
+      "detail": "geocode_place({\"place\": \"杭州\"})",
+      "latency": 6.32
+    },
+    "并行工具调用": {
+      "pass": true,
+      "detail": "返回 2 个调用：geocode_place, search_weather_knowledge",
+      "latency": 11.39
+    },
+    "工具选择克制": {
+      "pass": true,
+      "detail": "调用：search_weather_knowledge",
+      "latency": 4.15
+    },
+    "指令遵循": {
+      "pass": true,
+      "detail": "加粗:✓ 来源标注:✓ 编造数值:无",
+      "latency": 12.09
+    },
+    "多轮工具链": {
+      "pass": true,
+      "detail": "第一轮 ['geocode_place'] → 第二轮 ['assess_weather_risk']",
+      "latency": 11.28
+    }
+  },
+  "doubao-seed-2-0-mini-260215": {
+    "_available": true,
+    "连通与延迟": {
+      "pass": true,
+      "latency_avg": 3.54,
+      "latency_max": 4.29,
+      "detail": "平均 3.54s（2.80~4.29）"
+    },
+    "单工具调用": {
+      "pass": "杭州",
+      "detail": "geocode_place( {\"place\": \"杭州\"})",
+      "latency": 2.17
+    },
+    "并行工具调用": {
+      "pass": true,
+      "detail": "返回 2 个调用：geocode_place, search_weather_knowledge",
+      "latency": 80.15
+    },
+    "工具选择克制": {
+      "pass": true,
+      "detail": "调用：search_weather_knowledge",
+      "latency": 5.89
+    },
+    "指令遵循": {
+      "pass": true,
+      "detail": "加粗:✓ 来源标注:✓ 编造数值:无",
+      "latency": 9.77
+    },
+    "多轮工具链": {
+      "pass": true,
+      "detail": "第一轮 ['geocode_place'] → 第二轮 ['assess_weather_risk']",
+      "latency": 69.66
+    }
+  },
+  "doubao-seed-character-260628": {
+    "_available": true,
+    "连通与延迟": {
+      "pass": true,
+      "latency_avg": 0.86,
+      "latency_max": 0.92,
+      "detail": "平均 0.86s（0.82~0.92）"
+    },
+    "单工具调用": {
+      "pass": "杭州",
+      "detail": "geocode_place({\"place\": \"杭州\"})",
+      "latency": 1.18
+    },
+    "并行工具调用": {
+      "pass": false,
+      "detail": "返回 1 个调用：geocode_place（未并行）",
+      "latency": 1.21
+    },
+    "工具选择克制": {
+      "pass": true,
+      "detail": "调用：search_weather_knowledge",
+      "latency": 1.49
+    },
+    "指令遵循": {
+      "pass": true,
+      "detail": "加粗:✓ 来源标注:✓ 编造数值:无",
+      "latency": 0.76
+    },
+    "多轮工具链": {
+      "pass": true,
+      "detail": "第一轮 ['geocode_place'] → 第二轮 ['assess_weather_risk']",
+      "latency": 2.99
+    }
+  }
+}

@@ -1,0 +1,51 @@
+# systemd 服务单元
+#
+# 安装：
+#   sudo cp deploy/weather-agent.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now weather-agent
+#   sudo journalctl -u weather-agent -f      # 看日志
+#
+# 注意路径与用户要按实际部署环境改。
+
+[Unit]
+Description=气象服务智能体 (Weather Service Agent)
+Documentation=https://github.com/yourname/weather-agent
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/weather-agent
+
+# 用 --no-reload：生产环境不要热重载，既省资源也避免改文件时的意外行为
+ExecStart=/usr/bin/python3 /opt/weather-agent/run.py --host 127.0.0.1 --port 8000 --no-reload
+
+Restart=always
+RestartSec=5
+# 反复崩溃时不要无限重启刷日志（5 分钟内超过 5 次就停）
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# ---- 安全加固：只给运行必需的权限 ----
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/weather-agent/backend/kb/data
+
+# 知识库索引常驻内存，约为索引文件大小的 1.5~2 倍。
+# 若服务器内存紧张，务必先加 swap，否则建索引阶段会被 OOM Kill。
+MemoryMax=2G
+
+Environment=PYTHONUNBUFFERED=1
+Environment=HF_ENDPOINT=https://hf-mirror.com   # 国内下载嵌入模型必须走镜像
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=weather-agent
+
+[Install]
+WantedBy=multi-user.target

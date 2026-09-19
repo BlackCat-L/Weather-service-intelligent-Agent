@@ -1,0 +1,173 @@
+{
+  "description": "气象智能体评估题集。每题声明期望的工具调用路径与回答应包含的要素，由 run_eval.py 自动跑分。",
+  "scoring": {
+    "tool_selection": "必须调用的工具是否都调了（required 内每组的『至少一个』）",
+    "forbidden": "不应调用的工具是否被调用（用来验证模型没有乱调工具）",
+    "keyword_hit": "回答是否覆盖了期望的要点（体现回答质量，不只判断工具）",
+    "grounding": "数值归因率——回答里的数字能否在工具结果里找到出处"
+  },
+  "cases": [
+    {
+      "id": "fc-01",
+      "category": "基础预报",
+      "question": "杭州明天天气怎么样？",
+      "required": [["geocode_place"], ["get_forecast_daily", "get_forecast_hourly"]],
+      "forbidden": ["calc_pv_output", "calc_wind_output"],
+      "expect_keywords": ["杭州"],
+      "note": "最基础的路径：先解析地名，再查预报"
+    },
+    {
+      "id": "fc-02",
+      "category": "基础预报",
+      "question": "余杭区未来三天适合作户外作业吗？",
+      "required": [["geocode_place"], ["get_forecast_daily", "get_forecast_hourly", "assess_weather_risk"]],
+      "forbidden": [],
+      "expect_keywords": ["户外"],
+      "note": "区县级地名，考验双源地理编码回退"
+    },
+    {
+      "id": "pv-01",
+      "category": "光伏",
+      "question": "余杭区明天光伏发电条件怎么样？",
+      "required": [["geocode_place"], ["calc_pv_output"]],
+      "forbidden": ["calc_wind_output"],
+      "expect_keywords": ["发电"],
+      "note": "必须调光伏计算工具，而不是只报天气"
+    },
+    {
+      "id": "pv-02",
+      "category": "光伏",
+      "question": "余杭区明天适合安排光伏板清洗吗？",
+      "required": [["geocode_place"], ["assess_weather_risk"]],
+      "forbidden": [],
+      "expect_keywords": ["清洗"],
+      "note": "核心场景题：必须识别出这是『作业适宜性』问题而非单纯设备风险。这也是开发中真实踩过坑的地方"
+    },
+    {
+      "id": "pv-03",
+      "category": "光伏",
+      "question": "光伏组件的温度一般比气温高多少？为什么夏天发电效率反而可能下降？",
+      "required": [["search_weather_knowledge"]],
+      "forbidden": ["calc_pv_output"],
+      "expect_keywords": ["组件温度", "效率"],
+      "note": "纯知识库题：不应去查天气，考的是工具选择是否精准"
+    },
+    {
+      "id": "wind-01",
+      "category": "风电",
+      "question": "内蒙古乌兰察布明天风电出力怎么样？",
+      "required": [["geocode_place"], ["calc_wind_output"]],
+      "forbidden": ["calc_pv_output"],
+      "expect_keywords": ["风电"],
+      "note": "风电场景 + 北方地名"
+    },
+    {
+      "id": "wind-02",
+      "category": "风电",
+      "question": "风电机组在什么风速下会停机？为什么要用100米高度的风速而不是10米？",
+      "required": [["search_weather_knowledge"]],
+      "forbidden": ["calc_wind_output"],
+      "expect_keywords": ["切出", "100"],
+      "note": "知识库题：应命中切出风速与轮毂高度两个规则"
+    },
+    {
+      "id": "kb-01",
+      "category": "知识库",
+      "question": "多少度算高温？高温预警分几级？",
+      "required": [["search_weather_knowledge"]],
+      "forbidden": ["geocode_place"],
+      "expect_keywords": ["35", "预警"],
+      "note": "发现检索问题的典型题：BM25 会误命中『风力等级』（被『度』字误导），混合检索才能正确命中"
+    },
+    {
+      "id": "kb-02",
+      "category": "知识库",
+      "question": "无人机飞行对风速和能见度有什么限制？",
+      "required": [["search_weather_knowledge"]],
+      "forbidden": ["calc_pv_output"],
+      "expect_keywords": ["风速", "能见度"],
+      "note": "低空方向的知识检索"
+    },
+    {
+      "id": "kb-03",
+      "category": "知识库",
+      "question": "暴雨是怎么分级的？24小时降水量多少算暴雨？",
+      "required": [["search_weather_knowledge"]],
+      "forbidden": ["geocode_place"],
+      "expect_keywords": ["50", "暴雨"],
+      "note": "灾害分级标准检索"
+    },
+    {
+      "id": "kb-04",
+      "category": "知识库",
+      "question": "为什么天气预报有时会不准？格点数据和气象站的数据有什么区别？",
+      "required": [["search_weather_knowledge"]],
+      "forbidden": ["calc_pv_output", "calc_wind_output"],
+      "expect_keywords": ["预报", "格点"],
+      "note": "数据说明类知识，考察对预报局限的理解"
+    },
+    {
+      "id": "kb-05",
+      "category": "知识库",
+      "question": "雷暴天气下户外作业要注意什么？",
+      "required": [["search_weather_knowledge"]],
+      "forbidden": [],
+      "expect_keywords": ["雷"],
+      "note": "安全管理类规则检索"
+    },
+    {
+      "id": "mix-01",
+      "category": "组合",
+      "question": "余杭区明天适合作户外作业吗？如果不行，哪个时段相对合适？",
+      "required": [["geocode_place"], ["assess_weather_risk", "get_forecast_hourly"]],
+      "forbidden": [],
+      "expect_keywords": ["时段"],
+      "note": "需要给出可作业窗口，而不是笼统结论"
+    },
+    {
+      "id": "mix-02",
+      "category": "组合",
+      "question": "杭州最近一周的天气和往年同期比，气温偏高还是偏低？",
+      "required": [["geocode_place"], ["get_history_daily"]],
+      "forbidden": [],
+      "expect_keywords": ["气温"],
+      "note": "需要历史再分析数据做同比"
+    },
+    {
+      "id": "mix-03",
+      "category": "组合",
+      "question": "余杭区明天光伏和风电哪个发电条件更好？",
+      "required": [["geocode_place"], ["calc_pv_output", "calc_wind_output"]],
+      "forbidden": [],
+      "expect_keywords": ["光伏"],
+      "note": "对比类问题，两条计算路径至少要用到"
+    },
+    {
+      "id": "edge-01",
+      "category": "边界",
+      "question": "火星明天天气怎么样？",
+      "required": [],
+      "forbidden": ["calc_pv_output", "calc_wind_output"],
+      "expect_keywords": [],
+      "note": "边界题：地名无法解析时应如实说明，不应编造。此题的 forbidden 是核心——乱用计算工具就是幻觉"
+    },
+    {
+      "id": "edge-02",
+      "category": "边界",
+      "question": "你好",
+      "required": [],
+      "forbidden": ["geocode_place", "calc_pv_output", "calc_wind_output", "get_forecast_daily"],
+      "expect_keywords": [],
+      "note": "边界题：闲聊不应触发任何工具调用，考察工具使用的克制"
+    },
+    {
+      "id": "edge-03",
+      "category": "边界",
+      "question": "帮我写一段 Python 快速排序",
+      "required": [],
+      "forbidden": ["geocode_place", "calc_pv_output", "calc_wind_output", "search_weather_knowledge", "get_forecast_daily"],
+      "expect_keywords": [],
+      "note": "边界题：非气象问题不应调用气象工具（考察职责边界，虽然是否拒答取决于提示词，但绝不该乱调工具）"
+    }
+  ]
+}

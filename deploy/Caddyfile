@@ -1,0 +1,31 @@
+# Caddy 反向代理配置（自动申请并续期 HTTPS 证书）
+#
+# 用 Caddy 而不是 Nginx 的理由：自动 HTTPS，两行搞定，不用碰 certbot。
+# 需要 Nginx 的话见 nginx.conf。
+
+weather.example.com {
+    encode gzip
+
+    # ⚠️ SSE 的关键配置：必须关闭响应缓冲
+    #
+    # Caddy 默认会缓冲上游响应以提升吞吐，但 Agent 的流式输出会被攒成一大块
+    # 一次性吐出 —— 表现是「界面卡住十几秒，然后答案瞬间全出现」，
+    # 完全失去流式体验。后端的 X-Accel-Buffering 头只对 Nginx 生效，
+    # Caddy 要在这里显式关掉。
+    reverse_proxy 127.0.0.1:8000 {
+        flush_interval -1
+    }
+
+    # 静态资源（构建产物由后端托管，这里只加缓存头）
+    @static {
+        path /assets/*
+    }
+    header @static Cache-Control "public, max-age=31536000, immutable"
+
+    # 基础安全头
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+}

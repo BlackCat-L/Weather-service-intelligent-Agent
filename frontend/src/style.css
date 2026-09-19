@@ -1,0 +1,222 @@
+/* ============================================================
+   全局样式与设计令牌
+   用一个地方管颜色/间距/圆角，组件里只引用变量——将来换主题不用翻遍组件。
+   ============================================================ */
+
+:root {
+  --c-bg: #f5f7fa;
+  --c-surface: #ffffff;
+  --c-surface-2: #f0f3f7;
+  --c-border: #e3e8ef;
+  --c-border-strong: #cbd5e1;
+
+  --c-text: #16202c;
+  --c-text-2: #5a6b7d;
+  --c-text-3: #94a3b8;
+
+  --c-primary: #0d8f86;
+  --c-primary-soft: #e6f5f4;
+  --c-primary-dark: #0a7069;
+
+  --c-accent: #2f6fed;
+  --c-accent-soft: #e8f0fe;
+
+  --c-ok: #15803d;
+  --c-ok-soft: #e8f6ed;
+  --c-warn: #b45309;
+  --c-warn-soft: #fdf3e3;
+  --c-err: #b91c1c;
+  --c-err-soft: #fdecec;
+
+  --c-tool: #6d4aa8;
+  --c-tool-soft: #f1ebfa;
+
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 14px;
+
+  --shadow-sm: 0 1px 2px rgba(16, 32, 48, 0.05);
+  --shadow-md: 0 2px 10px rgba(16, 32, 48, 0.07);
+
+  --font: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+    'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+  --font-mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--c-text);
+  background: var(--c-bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+button {
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+  border: 1px solid transparent;
+  border-radius: var(--r-sm);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+input,
+textarea,
+select {
+  font-family: inherit;
+  font-size: inherit;
+  color: var(--c-text);
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ---------- 通用小部件 ---------- */
+
+.card {
+  background: var(--c-surface);
+  border: 1px solid var(--c-border);
+  border-radius: var(--r-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.badge--ok {
+  background: var(--c-ok-soft);
+  color: var(--c-ok);
+}
+.badge--warn {
+  background: var(--c-warn-soft);
+  color: var(--c-warn);
+}
+.badge--err {
+  background: var(--c-err-soft);
+  color: var(--c-err);
+}
+.badge--neutral {
+  background: var(--c-surface-2);
+  color: var(--c-text-2);
+}
+.badge--primary {
+  background: var(--c-primary-soft);
+  color: var(--c-primary-dark);
+}
+.badge--tool {
+  background: var(--c-tool-soft);
+  color: var(--c-tool);
+}
+
+.muted {
+  color: var(--c-text-2);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+/* ---------- 滚动条 ---------- */
+
+::-webkit-scrollbar {
+  width: 9px;
+  height: 9px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--c-border-strong);
+  border-radius: 5px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--c-text-3);
+  background-clip: content-box;
+}
+
+/* ---------- 动画 ---------- */
+
+@keyframes fadeUp {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.fade-up {
+  animation: fadeUp 0.22s ease-out;
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
+}
+
+.pulsing {
+  animation: pulse 1.3s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--c-border-strong);
+  border-top-color: var(--c-primary);
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
