@@ -48,8 +48,11 @@ def answer(question: str, session_id: str | None = None, mode: str = "single",
     session: Session = store.get(session_id)
 
     reg = registry()
+    # 两种模式都必须传会话历史。多智能体模式下这点尤其容易漏——
+    # 它的每个角色都是独立 Agent 循环，不共享记忆，漏传就表现为
+    # 「追问『那后天呢？』时凭空编出一个城市」。
     if mode == "multi":
-        result = run_multi(question, reg, on_event=on_event)
+        result = run_multi(question, reg, history=session.history, on_event=on_event)
     else:
         result = run_single(question, reg, system_prompt(),
                             history=session.history, on_event=on_event)
